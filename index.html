@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>টালিকাতা স্টাইল লেজার</title>
+    
+    <!-- ফায়ারবেস এসডিকে (Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f6f8;
+            margin: 0;
+            padding: 0;
+            padding-bottom: 20px;
+        }
+
+        .page { display: none; }
+        .page.active-page { display: block; }
+
+        /* টপ হেডার */
+        .top-header {
+            background-color: #f7d75b;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .shop-name { font-weight: bold; font-size: 16px; display: flex; align-items: center; gap: 5px; }
+        .header-icons { display: flex; gap: 15px; font-size: 13px; }
+
+        .banner {
+            background: #fff; margin: 10px; padding: 10px;
+            border-radius: 8px; text-align: center; border: 1px solid #f0e0c0;
+            font-size: 14px; font-weight: bold; color: #b85a00;
+        }
+
+        .shortcuts {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 8px; padding: 0 10px; margin-bottom: 15px;
+        }
+        .shortcut-item {
+            background: #fff; padding: 12px 5px; border-radius: 8px;
+            text-align: center; font-size: 12px; color: #333;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .shortcut-item span { font-size: 20px; display: block; margin-bottom: 5px; }
+
+        .summary-card {
+            background: #fff; margin: 0 10px 15px 10px; border-radius: 8px;
+            display: flex; flex-direction: row; padding: 15px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); text-align: center;
+        }
+        .summary-col { flex: 1; min-width: 0; }
+        .summary-col:first-child { border-right: 1px solid #eee; }
+        .amount-green { color: #d9534f; font-size: 17px; font-weight: bold; }
+        .amount-red { color: #28a745; font-size: 17px; font-weight: bold; }
+        .summary-label { font-size: 12px; color: #666; margin-top: 4px; }
+
+        .search-section { padding: 0 10px; margin-bottom: 15px; display: flex; gap: 8px; }
+        .search-box {
+            flex: 1; background: #fff; display: flex; align-items: center;
+            padding: 8px 12px; border-radius: 20px; border: 1px solid #ddd;
+        }
+        .search-box input { border: none; outline: none; width: 100%; margin-left: 8px; font-size: 14px; background: transparent; }
+        .icon-btn {
+            background: #fff; border: 1px solid #ddd; border-radius: 50%;
+            width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; font-size: 16px;
+        }
+
+        .list-header { padding: 0 15px; font-size: 13px; color: #666; margin-bottom: 8px; }
+
+        .customer-list { background: #fff; border-top: 1px solid #eee; border-bottom: 1px solid #eee; }
+        .customer-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer;
+        }
+        .customer-left { display: flex; align-items: center; gap: 12px; }
+        .avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: #e8f5e9; color: #2e7d32; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 14px;
+        }
+        .avatar.red-bg { background: #ffebee; color: #c62828; }
+        .cust-name { font-size: 15px; font-weight: bold; color: #333; }
+        .cust-time { font-size: 12px; color: #888; margin-top: 2px; }
+        .customer-right { text-align: right; }
+        .cust-amount { font-size: 15px; font-weight: bold; }
+
+        .fab {
+            position: fixed; bottom: 65px; right: 15px; background: #d32f2f; color: white;
+            border: none; border-radius: 30px; padding: 10px 18px; font-size: 14px; font-weight: bold;
+            display: flex; align-items: center; gap: 5px; box-shadow: 0 4px 10px rgba(211, 47, 47, 0.4);
+            cursor: pointer; z-index: 101;
+        }
+
+        .form-header {
+            background: #fff; padding: 12px 15px; display: flex; align-items: center;
+            justify-content: space-between; border-bottom: 1px solid #ddd; font-size: 17px; font-weight: bold;
+        }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .back-btn { background: none; border: none; font-size: 20px; cursor: pointer; padding: 0; }
+        .form-body { padding: 15px; }
+
+        .profile-upload-section { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .profile-pic-box {
+            width: 55px; height: 55px; background: #e0e0e0; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; position: relative; color: #777; font-size: 24px;
+        }
+        .camera-icon {
+            position: absolute; bottom: 0; right: 0; background: #fff; border-radius: 50%;
+            font-size: 12px; padding: 2px; border: 1px solid #ccc;
+        }
+        .role-selector { display: flex; gap: 10px; flex: 1; }
+        .role-card {
+            flex: 1; border: 1px solid #ccc; border-radius: 8px; padding: 10px;
+            display: flex; align-items: center; gap: 8px; background: #fff; cursor: pointer; font-weight: bold; font-size: 14px;
+        }
+        .role-card.active-role { border-color: #d32f2f; color: #d32f2f; }
+        .role-card input { accent-color: #d32f2f; }
+
+        .phonebook-btn {
+            width: 100%; background: #f0f0f0; border: 1px solid #ddd; border-radius: 8px;
+            padding: 12px; text-align: center; font-weight: bold; color: #333; margin-bottom: 20px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .input-group {
+            background: #fff; border: 1px solid #ddd; border-radius: 8px;
+            display: flex; align-items: center; padding: 10px 15px; margin-bottom: 15px; gap: 12px;
+        }
+        .input-group span { font-size: 18px; color: #666; }
+        .input-group input { border: none; outline: none; width: 100%; font-size: 15px; background: transparent; }
+
+        .submit-btn {
+            position: fixed; bottom: 20px; left: 15px; right: 15px; background: #f7d75b; color: #333;
+            border: none; border-radius: 25px; padding: 14px; font-size: 16px; font-weight: bold;
+            text-align: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* লেনদেন পেজ ডিজাইন */
+        .trans-top-info {
+            background: #fff; padding: 12px 15px; border-bottom: 1px solid #eee;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .trans-inputs-container {
+            padding: 10px; background: #f5f6f8;
+        }
+        .amount-boxes-row {
+            display: flex; gap: 10px; margin-bottom: 10px;
+        }
+        .amount-input-box {
+            flex: 1; background: #fff; border: 1px solid #ccc; border-radius: 8px;
+            padding: 10px; box-sizing: border-box; cursor: pointer;
+        }
+        .amount-input-box.active-box {
+            border: 2px solid #d32f2f;
+        }
+        .amount-input-box label { font-size: 12px; color: #666; display: block; margin-bottom: 3px; }
+        .amount-display {
+            font-size: 18px; font-weight: bold; color: #d32f2f; min-height: 24px; word-break: break-all;
+        }
+        
+        .note-input-box {
+            background: #fff; border: 1px solid #ccc; border-radius: 8px;
+            padding: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+        }
+        .note-input-box input { border: none; outline: none; width: 100%; font-size: 14px; background: transparent; }
+
+        .extra-options-row {
+            display: flex; gap: 8px; margin-bottom: 10px; align-items: center;
+        }
+        .badge-pill {
+            background: #fff; border: 1px solid #ddd; border-radius: 20px;
+            padding: 6px 12px; font-size: 12px; color: #333; display: flex; align-items: center; gap: 5px; cursor: pointer;
+        }
+        .toggle-switch {
+            position: relative; display: inline-block; width: 34px; height: 18px; margin-left: auto;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: .4s; border-radius: 18px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #d32f2f; }
+        input:checked + .slider:before { transform: translateX(16px); }
+
+        .confirm-trans-btn {
+            width: 100%; background: #f2d1d1; color: #a00; border: none; border-radius: 25px;
+            padding: 12px; font-size: 16px; font-weight: bold; text-align: center; cursor: pointer; margin-bottom: 10px;
+        }
+        .confirm-trans-btn.active-confirm {
+            background: #d32f2f; color: white;
+        }
+
+        /* ক্যালকুলেটর প্যাড */
+        .calc-pad {
+            background: #fff; border-top: 1px solid #ddd; display: grid;
+            grid-template-columns: repeat(4, 1fr); text-align: center;
+        }
+        .calc-btn {
+            padding: 14px 0; font-size: 18px; font-weight: bold; border: 1px solid #f0f0f0;
+            background: #fff; color: #333; cursor: pointer; user-select: none;
+        }
+        .calc-btn:active { background: #e0e0e0; }
+        .calc-btn.op-btn { background: #fafafa; color: #666; }
+        .calc-btn.equal-btn { background: #ffebee; color: #d32f2f; }
+
+        /* সাকসেস রিসিট পপআপ মডাল */
+        .success-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 500; justify-content: center; align-items: flex-end;
+        }
+        .success-modal-content {
+            background: #fff; width: 100%; border-top-left-radius: 20px; border-top-right-radius: 20px;
+            padding: 20px; box-sizing: border-box; max-height: 90vh; overflow-y: auto; text-align: center;
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .success-icon-circle {
+            width: 55px; height: 55px; background: #00b050; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; color: white; font-size: 28px;
+            margin: -45px auto 10px auto; border: 4px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .receipt-card {
+            background: #fff; border: 1px solid #eee; border-radius: 10px; padding: 15px;
+            margin-top: 15px; text-align: left; box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+        }
+        .receipt-row {
+            display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f9f9f9;
+        }
+        .receipt-row:last-child { border-bottom: none; font-weight: bold; font-size: 15px; }
+        .close-receipt-btn {
+            background: #f0f0f0; border: none; padding: 10px 30px; border-radius: 20px;
+            font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 14px; color: #333;
+        }
+        .share-icon-box {
+            cursor: pointer; transition: transform 0.2s;
+        }
+        .share-icon-box:active { transform: scale(0.9); }
+
+        /* রিপোর্ট পেজের স্টাইল */
+        .report-table-head {
+            display: flex; background: #f0f0f0; font-size: 13px; font-weight: bold; color: #555; border-bottom: 1px solid #ddd; padding: 8px 10px;
+        }
+        .report-row {
+            display: flex; background: #fff; border-bottom: 1px solid #eee; padding: 10px; font-size: 13px; align-items: center; cursor: pointer;
+        }
+        .report-row.selected {
+            background: #fff9f9; border-left: 4px solid #d32f2f;
+        }
+        .report-col-desc { flex: 2; }
+        .report-col-give { flex: 1.2; text-align: center; color: #d32f2f; font-weight: bold; background: #fff5f5; padding: 6px 0; }
+        .report-col-get { flex: 1.2; text-align: center; color: #2e7d32; font-weight: bold; }
+        
+        .report-footer-total {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 2px solid #ddd;
+            display: flex; padding: 12px 10px; font-weight: bold; font-size: 14px; box-sizing: border-box; justify-content: space-between; z-index: 102;
+        }
+
+        .action-bottom-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 1px solid #ddd;
+            display: none; padding: 12px 15px; box-sizing: border-box; gap: 15px; z-index: 105;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        .action-btn-del, .action-btn-edit {
+            flex: 1; background: #fff; border: 1px solid #d32f2f; color: #d32f2f; border-radius: 25px;
+            padding: 10px; font-weight: bold; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
+        }
+
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: #fff;
+            display: flex; justify-content: space-around; padding: 8px 0; border-top: 1px solid #ddd; z-index: 100;
+        }
+        .nav-item { text-align: center; font-size: 11px; color: #666; cursor: pointer; }
+        .nav-item.active { color: #d32f2f; font-weight: bold; }
+        .nav-item span { font-size: 18px; display: block; }
+    </style>
+</head>
+<body>
+
+    <!-- ১. হোম পেজ -->
+    <div id="homePage" class="page active-page">
+        <div class="top-header">
+            <div class="shop-name">👑 নাজিফা ফ্যাশন <span>▼</span></div>
+            <div class="header-icons">
+                <div>📥 ইনবক্স</div>
+                <div>💬 সাপোর্ট</div>
+            </div>
+        </div>
+
+        <div class="banner">⚠️ জাতীয় পরিচয়পত্র ও সেলফি তুলুন</div>
+
+        <div class="shortcuts">
+            <div class="shortcut-item"><span>📖</span>মাল্টি ব্যবসা</div>
+            <div class="shortcut-item"><span>📦</span>স্টক হিসাব</div>
+            <div class="shortcut-item"><span>📝</span>ব্যবসার নোট</div>
+            <div class="shortcut-item"><span>🔔</span>গ্রুপ তাগাদা</div>
+            <div class="shortcut-item"><span>🔲</span>QR কোড</div>
+            <div class="shortcut-item"><span>☁️</span>ডাটা ব্যাকআপ</div>
+            <div class="shortcut-item"><span>💬</span>টালি-মেসেজ</div>
+            <div class="shortcut-item"><span>💰</span>ক্যাশ বাক্স</div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-col">
+                <div id="totalReceive" class="amount-green">৳ ০</div>
+                <div class="summary-label">মোট পাবো</div>
+            </div>
+            <div class="summary-col">
+                <div id="totalGive" class="amount-red">৳ ০</div>
+                <div class="summary-label">মোট দেবো</div>
+            </div>
+        </div>
+
+        <div class="search-section">
+            <div class="search-box">
+                <span>🔍</span>
+                <input type="text" id="searchInput" placeholder="খোঁজ" onkeyup="searchCustomer()">
+            </div>
+            <button class="icon-btn">⚙️</button>
+            <button class="icon-btn">⬇️</button>
+        </div>
+
+        <div class="list-header" id="listCount">কাস্টমার ০ / সাপ্লায়ার ০</div>
+
+        <div class="customer-list" id="customerListContainer">
+            <div style="padding: 20px; text-align: center; color: #888;">ডাটা লোড হচ্ছে...</div>
+        </div>
+
+        <button class="fab" onclick="goToAddPage()">👤+ কাস্টমার</button>
+
+        <div class="bottom-nav">
+            <div class="nav-item active"><span>📖</span>টালি</div>
+            <div class="nav-item"><span>💰</span>ক্যাশবক্স</div>
+            <div class="nav-item"><span>📷</span>QR স্ক্যান</div>
+            <div class="nav-item"><span>💳</span>টালিপে</div>
+            <div class="nav-item"><span>☰</span>মেনু</div>
+        </div>
+    </div>
+
+    <!-- ২. নতুন কাস্টমার/সাপ্লায়ার পেজ -->
+    <div id="addPage" class="page">
+        <div class="form-header">
+            <div class="header-left">
+                <button class="back-btn" onclick="goToHomePage()">←</button>
+                <span>নতুন কাস্টমার/সাপ্লায়ার</span>
+            </div>
+        </div>
+
+        <div class="form-body">
+            <div class="profile-upload-section">
+                <div class="profile-pic-box">👤<div class="camera-icon">📷</div></div>
+                <div class="role-selector">
+                    <label class="role-card active-role" id="custCard">
+                        <input type="radio" name="partyRole" value="customer" checked onclick="selectRole('customer')"> কাস্টমার
+                    </label>
+                    <label class="role-card" id="suppCard">
+                        <input type="radio" name="partyRole" value="supplier" onclick="selectRole('supplier')"> সাপ্লায়ার
+                    </label>
+                </div>
+            </div>
+
+            <div class="phonebook-btn" onclick="alert('ফোনবুক কন্টাক্ট অ্যাক্সেস')">
+                <span>📖</span> ফোনবুক থেকে যোগ করি
+            </div>
+
+            <div class="input-group">
+                <span>👤</span>
+                <input type="text" id="custName" placeholder="নাম">
+            </div>
+
+            <div class="input-group">
+                <span>📞</span>
+                <input type="tel" id="custPhone" placeholder="মোবাইল নম্বর">
+            </div>
+
+            <button class="submit-btn" onclick="saveCustomer()">নিশ্চিত</button>
+        </div>
+    </div>
+
+    <!-- ৩. লেনদেন পেজ -->
+    <div id="detailPage" class="page">
+        <div class="form-header">
+            <div class="header-left">
+                <button class="back-btn" onclick="goToHomePage()">←</button>
+                <div>
+                    <div id="detailName" style="font-size: 16px;">নাম</div>
+                    <div id="detailPhone" style="font-size: 12px; color: #666; font-weight: normal;">মোবাইল নম্বর</div>
+                </div>
+            </div>
+            <div style="font-size: 18px;">⋮</div>
+        </div>
+
+        <div class="trans-top-info">
+            <div>
+                <span id="detailBalanceText" style="font-weight: bold; color: #d32f2f;">পাবো ৳ ০.০০</span>
+                <div style="font-size: 11px; color: #888;">(আজ)</div>
+            </div>
+            <button class="badge-pill" onclick="openReportPage()">📄 রিপোর্ট</button>
+        </div>
+
+        <div class="trans-inputs-container">
+            <div class="amount-boxes-row">
+                <div class="amount-input-box active-box" id="boxGive" onclick="setActiveTab('give')">
+                    <label id="labelGive">দিলাম/বেচা</label>
+                    <div class="amount-display" id="displayGive">৳ 0</div>
+                </div>
+                <div class="amount-input-box" id="boxGet" onclick="setActiveTab('get')">
+                    <label id="labelGet">পেলাম</label>
+                    <div class="amount-display" id="displayGet" style="color: #666;">৳ 0</div>
+                </div>
+            </div>
+
+            <div class="note-input-box">
+                <span>📝</span>
+                <input type="text" id="transNoteInput" placeholder="বিবরণ">
+            </div>
+
+            <div class="extra-options-row">
+                <div class="badge-pill" id="currentDateBadge">📅 ১৭ নভেম্বর</div>
+                <div class="badge-pill">
+                    টালি-মেসেজ 
+                    <label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <div class="badge-pill">📷 ছবি</div>
+            </div>
+
+            <button class="confirm-trans-btn" id="confirmTransBtn" onclick="saveTransaction()">নিশ্চিত</button>
+        </div>
+
+        <!-- ক্যালকুলেটর প্যাড -->
+        <div class="calc-pad">
+            <button class="calc-btn op-btn" onclick="pressCalc('AC')">AC</button>
+            <button class="calc-btn op-btn" onclick="pressCalc('%')">%</button>
+            <button class="calc-btn op-btn" onclick="pressCalc('÷')">÷</button>
+            <button class="calc-btn op-btn" onclick="pressCalc('X')">X</button>
+            
+            <button class="calc-btn" onclick="pressCalc('7')">7</button>
+            <button class="calc-btn" onclick="pressCalc('8')">8</button>
+            <button class="calc-btn" onclick="pressCalc('9')">9</button>
+            <button class="calc-btn op-btn" onclick="pressCalc('-')">-</button>
+            
+            <button class="calc-btn" onclick="pressCalc('4')">4</button>
+            <button class="calc-btn" onclick="pressCalc('5')">5</button>
+            <button class="calc-btn" onclick="pressCalc('6')">6</button>
+            <button class="calc-btn op-btn" onclick="pressCalc('+')">+</button>
+            
+            <button class="calc-btn" onclick="pressCalc('1')">1</button>
+            <button class="calc-btn" onclick="pressCalc('2')">2</button>
+            <button class="calc-btn" onclick="pressCalc('3')">3</button>
+            <button class="calc-btn equal-btn" onclick="pressCalc('=')">=</button>
+            
+            <button class="calc-btn" onclick="pressCalc('DEL')">⌫</button>
+            <button class="calc-btn" onclick="pressCalc('0')">0</button>
+            <button class="calc-btn" onclick="pressCalc('.')">.</button>
+        </div>
+    </div>
+
+    <!-- ৪. রিপোর্ট পেজ -->
+    <div id="reportPage" class="page">
+        <div class="form-header">
+            <div class="header-left">
+                <button class="back-btn" onclick="backToDetailPage()">←</button>
+                <div>
+                    <div id="reportName" style="font-size: 16px;">নাম</div>
+                    <div id="reportSubBalance" style="font-size: 12px; color: #d32f2f; font-weight: bold;">পাবো ৳ ০.০০</div>
+                </div>
+            </div>
+            <button class="badge-pill" onclick="alert('ডাউনলোড ফিচার শীঘ্রই আসছে')">📥 ডাউনলোড</button>
+        </div>
+
+        <div style="background: #fff; padding: 10px 15px; border-bottom: 1px solid #ddd; font-size: 13px; color: #555; display: flex; justify-content: space-between; align-items: center;">
+            <span>🔍 তাগাদা মেসেজ পাঠাই</span>
+            <span style="color: #d32f2f; font-weight: bold;">রিপোর্ট শেয়ার <input type="checkbox" checked style="accent-color: #d32f2f; vertical-align: middle;"></span>
+        </div>
+
+        <div class="report-table-head">
+            <div class="report-col-desc" style="padding-left: 10px;">লেনদেনের বিবরণ</div>
+            <div class="report-col-give">দিলাম</div>
+            <div class="report-col-get" style="text-align: right; padding-right: 10px;">পেলাম</div>
+        </div>
+
+        <div id="reportListContainer" style="padding-bottom: 80px;"></div>
+
+        <div class="report-footer-total" id="reportFooterTotal">
+            <div style="padding-left: 10px;">মোট</div>
+            <div id="reportTotalGive" style="color: #d32f2f; text-align: center; flex: 1.2;">৳ ০.০০</div>
+            <div id="reportTotalGet" style="color: #2e7d32; text-align: right; padding-right: 10px; flex: 1.2;">৳ ০.০০</div>
+        </div>
+
+        <div class="action-bottom-bar" id="actionBottomBar">
+            <button class="action-btn-del" onclick="deleteSelectedTransaction()">🗑️ ডিলিট</button>
+            <button class="action-btn-edit" onclick="openEditTransactionPage()">✏️ এডিট</button>
+        </div>
+    </div>
+
+    <!-- ৫. লেনদেন এডিট পেজ -->
+    <div id="editTransactionPage" class="page">
+        <div class="form-header">
+            <div class="header-left">
+                <button class="back-btn" onclick="backToReportPageFromEdit()">←</button>
+                <span style="font-size: 17px;">লেনদেন এডিট</span>
+            </div>
+        </div>
+
+        <div class="trans-top-info" style="border-bottom: none;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div id="editAvatar" class="avatar" style="width: 38px; height: 38px; font-size: 13px;">নএ</div>
+                <div>
+                    <div id="editCustName" style="font-weight: bold; font-size: 15px;">নাম</div>
+                    <div id="editSubBalance" style="font-size: 12px; color: #d32f2f; font-weight: bold;">পাবো ৳ ০.০০</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="trans-inputs-container">
+            <div class="amount-boxes-row">
+                <div class="amount-input-box active-box" id="editBoxGive" onclick="setEditTab('give')">
+                    <label id="editLabelGive">দিলাম/বেচা</label>
+                    <div class="amount-display" id="editDisplayGive">৳ 0</div>
+                </div>
+                <div class="amount-input-box" id="editBoxGet" onclick="setEditTab('get')">
+                    <label id="editLabelGet">পেলাম</label>
+                    <div class="amount-display" id="editDisplayGet" style="color: #666;">৳ 0</div>
+                </div>
+            </div>
+
+            <div class="note-input-box">
+                <span>📝</span>
+                <input type="text" id="editNoteInput" placeholder="বিবরণ">
+            </div>
+
+            <button class="confirm-trans-btn active-confirm" onclick="updateTransaction()">পরবর্তী</button>
+        </div>
+
+        <div class="calc-pad">
+            <button class="calc-btn op-btn" onclick="pressEditCalc('AC')">AC</button>
+            <button class="calc-btn op-btn" onclick="pressEditCalc('%')">%</button>
+            <button class="calc-btn op-btn" onclick="pressEditCalc('÷')">÷</button>
+            <button class="calc-btn op-btn" onclick="pressEditCalc('X')">X</button>
+            
+            <button class="calc-btn" onclick="pressEditCalc('7')">7</button>
+            <button class="calc-btn" onclick="pressEditCalc('8')">8</button>
+            <button class="calc-btn" onclick="pressEditCalc('9')">9</button>
+            <button class="calc-btn op-btn" onclick="pressEditCalc('-')">-</button>
+            
+            <button class="calc-btn" onclick="pressEditCalc('4')">4</button>
+            <button class="calc-btn" onclick="pressEditCalc('5')">5</button>
+            <button class="calc-btn" onclick="pressEditCalc('6')">6</button>
+            <button class="calc-btn op-btn" onclick="pressEditCalc('+')">+</button>
+            
+            <button class="calc-btn" onclick="pressEditCalc('1')">1</button>
+            <button class="calc-btn" onclick="pressEditCalc('2')">2</button>
+            <button class="calc-btn" onclick="pressEditCalc('3')">3</button>
+            <button class="calc-btn equal-btn" onclick="pressEditCalc('=')">=</button>
+            
+            <button class="calc-btn" onclick="pressEditCalc('DEL')">⌫</button>
+            <button class="calc-btn" onclick="pressEditCalc('0')">0</button>
+            <button class="calc-btn" onclick="pressEditCalc('.')">.</button>
+        </div>
+    </div>
+
+    <!-- ৬. সাকসেস রিসিট পপআপ মডাল -->
+    <div class="success-modal" id="successModal">
+        <div class="success-modal-content">
+            <div class="success-icon-circle">✓</div>
+            <div style="font-weight: bold; font-size: 16px; margin-bottom: 10px; color: #333;">লেনদেনটি রেকর্ড করা হয়েছে।</div>
+            
+            <div class="receipt-card">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+                    <div id="receiptAvatar" class="avatar" style="width: 32px; height: 32px; font-size: 12px;">নএ</div>
+                    <div>
+                        <div id="receiptName" style="font-weight: bold; font-size: 14px;">নাম</div>
+                        <div id="receiptPhone" style="font-size: 11px; color: #666;">নম্বর</div>
+                    </div>
+                </div>
+                
+                <div class="receipt-row">
+                    <span style="color: #666;" id="labelPrev">পূর্বের হিসাব</span>
+                    <span id="receiptPrevBal" style="font-weight: bold;">৳ ০.০০</span>
+                </div>
+                <div class="receipt-row">
+                    <span style="color: #666;" id="labelGiveReceipt">দিলাম</span>
+                    <span id="receiptGiveVal" style="color: #d32f2f;">৳ ০.০০</span>
+                </div>
+                <div class="receipt-row">
+                    <span style="color: #666;" id="labelGetReceipt">পেলাম</span>
+                    <span id="receiptGetVal" style="color: #2e7d32;">৳ ০.০০</span>
+                </div>
+                <div class="receipt-row" style="border-top: 1px solid #eee; margin-top: 5px; padding-top: 8px;">
+                    <span style="font-weight: bold;" id="labelCurr">বর্তমান হিসাব</span>
+                    <span id="receiptCurrBal" style="font-weight: bold; color: #d32f2f;">৳ ০.০০</span>
+                </div>
+            </div>
+
+            <div style="margin: 20px 0 10px 0; font-size: 13px; color: #666;">লেনদেন রেকর্ড শেয়ার করি</div>
+            <div style="display: flex; justify-content: space-around; font-size: 12px; color: #444; margin-bottom: 15px;">
+                <div class="share-icon-box" onclick="shareViaShareSheet()">🟢<br><span style="font-size:10px;">হোয়াটসঅ্যাপ</span></div>
+                <div class="share-icon-box" onclick="shareViaShareSheet()">📥<br><span style="font-size:10px;">টালি-মেসেজ</span></div>
+            </div>
+
+            <button class="close-receipt-btn" onclick="closeSuccessModal()">ঠিক আছে</button>
+        </div>
+    </div>
+
+    <script>
+        // আপনার ফায়ারবেস কনফিগারেশন
+        const firebaseConfig = {
+            apiKey: "AIzaSyAc4ZF-MatC8LXKDZ5soXH20lH-P3KYZ3s",
+            authDomain: "najifatallyapp.firebaseapp.com",
+            databaseURL: "https://najifatallyapp-default-rtdb.firebaseio.com",
+            projectId: "najifatallyapp",
+            storageBucket: "najifatallyapp.firebasestorage.app",
+            messagingSenderId: "158450588349",
+            appId: "1:158450588349:web:ada843888e5d7d6b8f75d4",
+            measurementId: "G-RJ6KE3XHP"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let customers = [];
+        let selectedRole = 'customer';
+        let currentCustomerIndex = null;
+        let activeTab = 'give';
+        let calcExpression = '0';
+        let lastTransactionDetails = {};
+        let selectedTransIndex = null;
+
+        let editActiveTab = 'give';
+        let editCalcExpression = '0';
+
+        // ফায়ারবেস থেকে রিয়েল-টাইম ডাটা সিঙ্ক করা
+        db.ref('tally_customers').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                customers = data;
+            } else {
+                customers = JSON.parse(localStorage.getItem('tally_customers_v3')) || [];
+            }
+            renderList();
+        });
+
+        function saveDataToFirebase() {
+            db.ref('tally_customers').set(customers);
+            localStorage.setItem('tally_customers_v3', JSON.stringify(customers));
+        }
+
+        function goToAddPage() {
+            document.getElementById('homePage').classList.remove('active-page');
+            document.getElementById('detailPage').classList.remove('active-page');
+            document.getElementById('reportPage').classList.remove('active-page');
+            document.getElementById('editTransactionPage').classList.remove('active-page');
+            document.getElementById('addPage').classList.add('active-page');
+        }
+
+        function goToHomePage() {
+            document.getElementById('addPage').classList.remove('active-page');
+            document.getElementById('detailPage').classList.remove('active-page');
+            document.getElementById('reportPage').classList.remove('active-page');
+            document.getElementById('editTransactionPage').classList.remove('active-page');
+            document.getElementById('homePage').classList.add('active-page');
+            renderList();
+        }
+
+        function openDetailPage(index) {
+            currentCustomerIndex = index;
+            let c = customers[index];
+
+            document.getElementById('homePage').classList.remove('active-page');
+            document.getElementById('reportPage').classList.remove('active-page');
+            document.getElementById('editTransactionPage').classList.remove('active-page');
+            document.getElementById('detailPage').classList.add('active-page');
+
+            document.getElementById('detailName').innerText = c.name;
+            document.getElementById('detailPhone').innerText = c.phone ? c.phone : (c.role === 'supplier' ? 'সাপ্লায়ার' : 'কাস্টমার');
+
+            if(c.role === 'supplier') {
+                document.getElementById('labelGive').innerText = 'দিলাম/ক্রয়';
+                document.getElementById('labelGet').innerText = 'পেলাম/পেমেন্ট';
+            } else {
+                document.getElementById('labelGive').innerText = 'দিলাম/বেচা';
+                document.getElementById('labelGet').innerText = 'পেলাম';
+            }
+
+            let options = { day: 'numeric', month: 'long', year: 'numeric' };
+            let timeOptions = { hour: '2-digit', minute: '2-digit' };
+            let now = new Date();
+            let dateStr = now.toLocaleDateString('bn-BD', options) + ', ' + now.toLocaleTimeString('en-US', timeOptions);
+            document.getElementById('currentDateBadge').innerText = '📅 ' + dateStr;
+
+            activeTab = 'give';
+            calcExpression = '0';
+            document.getElementById('transNoteInput').value = '';
+            updateCalcDisplay();
+            updateHeaderBalance();
+        }
+
+        function backToDetailPage() {
+            document.getElementById('reportPage').classList.remove('active-page');
+            document.getElementById('detailPage').classList.add('active-page');
+            selectedTransIndex = null;
+            document.getElementById('actionBottomBar').style.display = 'none';
+            document.getElementById('reportFooterTotal').style.display = 'flex';
+        }
+
+        function backToReportPageFromEdit() {
+            document.getElementById('editTransactionPage').classList.remove('active-page');
+            document.getElementById('reportPage').classList.add('active-page');
+        }
+
+        function openReportPage() {
+            selectedTransIndex = null;
+            document.getElementById('actionBottomBar').style.display = 'none';
+            document.getElementById('reportFooterTotal').style.display = 'flex';
+
+            let c = customers[currentCustomerIndex];
+            document.getElementById('detailPage').classList.remove('active-page');
+            document.getElementById('editTransactionPage').classList.remove('active-page');
+            document.getElementById('reportPage').classList.add('active-page');
+
+            document.getElementById('reportName').innerText = c.name;
+            
+            let balText = c.balance >= 0 ? `পাবো ৳ ${c.balance.toLocaleString()}` : `দেবো ৳ ${Math.abs(c.balance).toLocaleString()}`;
+            document.getElementById('reportSubBalance').innerText = balText;
+
+            let container = document.getElementById('reportListContainer');
+            if(!c.transactions || c.transactions.length === 0) {
+                container.innerHTML = '<div style="padding: 30px; text-align: center; color: #888;">কোনো লেনদেন পাওয়া যায়নি</div>';
+                document.getElementById('reportTotalGive').innerText = '৳ ০.০০';
+                document.getElementById('reportTotalGet').innerText = '৳ ০.০০';
+                return;
+            }
+
+            let html = '';
+            let totalGive = 0;
+            let totalGet = 0;
+            let runningBalance = c.balance;
+
+            c.transactions.forEach((t, tIndex) => {
+                let giveVal = t.type === 'give' ? t.amount : 0;
+                let getVal = t.type === 'get' ? t.amount : 0;
+
+                totalGive += giveVal;
+                totalGet += getVal;
+
+                let balLabel = runningBalance >= 0 ? `পাবো ৳ ${Math.abs(runningBalance).toLocaleString()}` : `দেবো ৳ ${Math.abs(runningBalance).toLocaleString()}`;
+
+                if(t.type === 'give') runningBalance -= t.amount;
+                else runningBalance += t.amount;
+
+                html += `
+                    <div class="report-row" id="trans-row-${tIndex}" onclick="selectTransaction(${tIndex})">
+                        <div class="report-col-desc" style="padding-left: 10px;">
+                            <div style="font-weight: bold; color: #333;">${t.date}</div>
+                            <div style="color: #666; font-size: 12px; margin-top: 2px;">${t.note}</div>
+                            <div style="display: inline-block; background: #f0f0f0; padding: 2px 8px; border-radius: 10px; font-size: 11px; color: #555; margin-top: 4px;">${balLabel}</div>
+                        </div>
+                        <div class="report-col-give">${giveVal > 0 ? '৳ ' + giveVal.toLocaleString() : ''}</div>
+                        <div class="report-col-get" style="text-align: right; padding-right: 10px;">${getVal > 0 ? '৳ ' + getVal.toLocaleString() : ''}</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            document.getElementById('reportTotalGive').innerText = '৳ ' + totalGive.toLocaleString();
+            document.getElementById('reportTotalGet').innerText = '৳ ' + totalGet.toLocaleString();
+        }
+
+        function selectTransaction(tIndex) {
+            let allRows = document.querySelectorAll('.report-row');
+            allRows.forEach(r => r.classList.remove('selected'));
+
+            selectedTransIndex = tIndex;
+            let currentRow = document.getElementById(`trans-row-${tIndex}`);
+            if(currentRow) currentRow.classList.add('selected');
+
+            document.getElementById('actionBottomBar').style.display = 'flex';
+            document.getElementById('reportFooterTotal').style.display = 'none';
+        }
+
+        function openEditTransactionPage() {
+            if(selectedTransIndex === null) return;
+            let c = customers[currentCustomerIndex];
+            let t = c.transactions[selectedTransIndex];
+
+            document.getElementById('reportPage').classList.remove('active-page');
+            document.getElementById('editTransactionPage').classList.add('active-page');
+
+            document.getElementById('editCustName').innerText = c.name;
+            document.getElementById('editAvatar').innerText = c.name.substring(0, 2);
+            let balText = c.balance >= 0 ? `পাবো ৳ ${c.balance.toLocaleString()}` : `দেবো ৳ ${Math.abs(c.balance).toLocaleString()}`;
+            document.getElementById('editSubBalance').innerText = balText;
+
+            editActiveTab = t.type;
+            editCalcExpression = String(t.amount);
+            document.getElementById('editNoteInput').value = t.note;
+
+            updateEditTabUI();
+        }
+
+        function setEditTab(tab) {
+            editActiveTab = tab;
+            updateEditTabUI();
+        }
+
+        function updateEditTabUI() {
+            let giveBox = document.getElementById('editBoxGive');
+            let getBox = document.getElementById('editBoxGet');
+            let giveDisp = document.getElementById('editDisplayGive');
+            let getDisp = document.getElementById('editDisplayGet');
+            let formatted = '৳ ' + editCalcExpression;
+
+            if(editActiveTab === 'give') {
+                giveBox.classList.add('active-box');
+                getBox.classList.remove('active-box');
+                giveDisp.innerText = formatted;
+                giveDisp.style.color = '#d32f2f';
+                getDisp.innerText = '৳ 0';
+                getDisp.style.color = '#666';
+            } else {
+                getBox.classList.add('active-box');
+                giveBox.classList.remove('active-box');
+                getDisp.innerText = formatted;
+                getDisp.style.color = '#d32f2f';
+                giveDisp.innerText = '৳ 0';
+                giveDisp.style.color = '#666';
+            }
+        }
+
+        function pressEditCalc(val) {
+            if(val === 'AC') {
+                editCalcExpression = '0';
+            } else if(val === 'DEL') {
+                editCalcExpression = editCalcExpression.length > 1 ? editCalcExpression.slice(0, -1) : '0';
+            } else if(val === '=') {
+                try {
+                    let evalStr = editCalcExpression.replace(/X/g, '*').replace(/÷/g, '/').replace(/%/g, '/100*');
+                    let result = eval(evalStr);
+                    if(!isNaN(result)) editCalcExpression = String(parseFloat(result.toFixed(2)));
+                } catch(e) {}
+            } else {
+                if(editCalcExpression === '0' && !['+', '-', 'X', '÷', '%', '.'].includes(val)) {
+                    editCalcExpression = val;
+                } else {
+                    editCalcExpression += val;
+                }
+            }
+            updateEditTabUI();
+        }
+
+        function updateTransaction() {
+            let newAmount = parseFloat(editCalcExpression);
+            if(isNaN(newAmount) || newAmount <= 0) {
+                alert('দয়া করে সঠিক টাকার পরিমাণ দিন!');
+                return;
+            }
+
+            let newNote = document.getElementById('editNoteInput').value.trim();
+            let c = customers[currentCustomerIndex];
+            let t = c.transactions[selectedTransIndex];
+
+            if(t.type === 'give') c.balance -= t.amount;
+            else c.balance += t.amount;
+
+            t.type = editActiveTab;
+            t.amount = newAmount;
+            t.note = newNote !== '' ? newNote : (editActiveTab === 'give' ? 'মাল বিক্রয়/দিলাম' : 'টাকা পেলাম');
+
+            if(editActiveTab === 'give') c.balance += newAmount;
+            else c.balance -= newAmount;
+
+            saveDataToFirebase();
+            alert('লেনদেন আপডেট করা হয়েছে!');
+            openReportPage();
+        }
+
+        function deleteSelectedTransaction() {
+            if(selectedTransIndex === null) return;
+            if(!confirm("লেনদেনটি ডিলিট করতে চান?")) return;
+
+            let c = customers[currentCustomerIndex];
+            let t = c.transactions[selectedTransIndex];
+
+            if(t.type === 'give') c.balance -= t.amount;
+            else c.balance += t.amount;
+
+            c.transactions.splice(selectedTransIndex, 1);
+            saveDataToFirebase();
+            openReportPage();
+        }
+
+        function selectRole(role) {
+            selectedRole = role;
+            if(role === 'customer') {
+                document.getElementById('custCard').classList.add('active-role');
+                document.getElementById('suppCard').classList.remove('active-role');
+            } else {
+                document.getElementById('suppCard').classList.add('active-role');
+                document.getElementById('custCard').classList.remove('active-role');
+            }
+        }
+
+        function saveCustomer() {
+            let name = document.getElementById('custName').value.trim();
+            let phone = document.getElementById('custPhone').value.trim();
+
+            if(name === '') {
+                alert('দয়া করে নাম লিখুন!');
+                return;
+            }
+
+            let newParty = {
+                role: selectedRole,
+                name: name,
+                phone: phone,
+                balance: 0,
+                transactions: []
+            };
+
+            customers.push(newParty);
+            saveDataToFirebase();
+
+            document.getElementById('custName').value = '';
+            document.getElementById('custPhone').value = '';
+            
+            goToHomePage();
+            openDetailPage(customers.length - 1);
+        }
+
+        function setActiveTab(tab) {
+            activeTab = tab;
+            calcExpression = '0';
+            if(tab === 'give') {
+                document.getElementById('boxGive').classList.add('active-box');
+                document.getElementById('boxGet').classList.remove('active-box');
+                document.getElementById('displayGive').style.color = '#d32f2f';
+                document.getElementById('displayGet').style.color = '#666';
+            } else {
+                document.getElementById('boxGet').classList.add('active-box');
+                document.getElementById('boxGive').classList.remove('active-box');
+                document.getElementById('displayGet').style.color = '#d32f2f';
+                document.getElementById('displayGive').style.color = '#666';
+            }
+            updateCalcDisplay();
+        }
+
+        function pressCalc(val) {
+            if(val === 'AC') {
+                calcExpression = '0';
+            } else if(val === 'DEL') {
+                calcExpression = calcExpression.length > 1 ? calcExpression.slice(0, -1) : '0';
+            } else if(val === '=') {
+                try {
+                    let evalStr = calcExpression.replace(/X/g, '*').replace(/÷/g, '/').replace(/%/g, '/100*');
+                    let result = eval(evalStr);
+                    if(!isNaN(result)) calcExpression = String(parseFloat(result.toFixed(2)));
+                } catch(e) {}
+            } else {
+                if(calcExpression === '0' && !['+', '-', 'X', '÷', '%', '.'].includes(val)) {
+                    calcExpression = val;
+                } else {
+                    calcExpression += val;
+                }
+            }
+            updateCalcDisplay();
+        }
+
+        function updateCalcDisplay() {
+            let displayGive = document.getElementById('displayGive');
+            let displayGet = document.getElementById('displayGet');
+            let confirmBtn = document.getElementById('confirmTransBtn');
+            let formatted = '৳ ' + calcExpression;
+
+            if(activeTab === 'give') {
+                displayGive.innerText = formatted;
+                displayGet.innerText = '৳ 0';
+            } else {
+                displayGet.innerText = formatted;
+                displayGive.innerText = '৳ 0';
+            }
+
+            let finalNum = parseFloat(calcExpression);
+            if(!isNaN(finalNum) && finalNum > 0) confirmBtn.classList.add('active-confirm');
+            else confirmBtn.classList.remove('active-confirm');
+        }
+
+        function saveTransaction() {
+            let amount = parseFloat(calcExpression);
+            if(isNaN(amount) || amount <= 0) {
+                alert('সঠিক টাকার পরিমাণ দিন!');
+                return;
+            }
+
+            let noteInput = document.getElementById('transNoteInput').value.trim();
+            let c = customers[currentCustomerIndex];
+            let prevBalance = c.balance;
+            let transType = activeTab; 
+            let note = noteInput !== '' ? noteInput : (transType === 'give' ? 'মাল বিক্রয়/দিলাম' : 'টাকা পেলাম');
+
+            if(transType === 'give') c.balance += amount;
+            else c.balance -= amount;
+
+            let now = new Date();
+            let options = { day: 'numeric', month: 'long', year: 'numeric' };
+            let timeOptions = { hour: '2-digit', minute: '2-digit' };
+            let formattedDate = now.toLocaleDateString('bn-BD', options) + ', ' + now.toLocaleTimeString('en-US', timeOptions);
+
+            c.transactions.unshift({
+                type: transType,
+                amount: amount,
+                note: note,
+                date: formattedDate
+            });
+
+            saveDataToFirebase();
+
+            lastTransactionDetails = {
+                name: c.name,
+                phone: c.phone || '01406577104',
+                prev: prevBalance,
+                give: transType === 'give' ? amount : 0,
+                get: transType === 'get' ? amount : 0,
+                curr: c.balance,
+                dateStr: formattedDate
+            };
+
+            document.getElementById('receiptName').innerText = c.name;
+            document.getElementById('receiptPhone').innerText = c.phone || '+8801684021215';
+            document.getElementById('receiptAvatar').innerText = c.name.substring(0, 2);
+
+            document.getElementById('receiptGiveVal').innerText = '৳ ' + (transType === 'give' ? amount : 0).toLocaleString();
+            document.getElementById('receiptGetVal').innerText = '৳ ' + (transType === 'get' ? amount : 0).toLocaleString();
+            
+            document.getElementById('receiptPrevBal').innerText = Math.abs(prevBalance).toLocaleString() + ' ৳';
+            document.getElementById('receiptCurrBal').innerText = Math.abs(c.balance).toLocaleString() + ' ৳';
+
+            document.getElementById('successModal').style.display = 'flex';
+        }
+
+        function shareViaShareSheet() {
+            let d = lastTransactionDetails;
+            let phoneNum = d.phone ? d.phone.replace(/[^0-9]/g, '') : '01406577104';
+            let msg = `লেনদেন রেকর্ড\nকাস্টমার: ${d.name}\n${d.dateStr}\nআজকে দিলাম: ${d.give} ৳\nআজকে পেলাম: ${d.get} ৳\n\nনাজিফা ফ্যাশন`;
+            if (navigator.share) {
+                navigator.share({ title: 'লেনদেন', text: msg }).catch(() => {});
+            } else {
+                prompt("নিচের মেসেজটি কপি করুন:", msg);
+            }
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').style.display = 'none';
+            calcExpression = '0';
+            document.getElementById('transNoteInput').value = '';
+            updateCalcDisplay();
+            updateHeaderBalance();
+        }
+
+        function updateHeaderBalance() {
+            let c = customers[currentCustomerIndex];
+            let balText = document.getElementById('detailBalanceText');
+            if(c.balance > 0) {
+                balText.innerText = 'পাবো ৳ ' + c.balance.toLocaleString();
+                balText.style.color = '#d32f2f';
+            } else if(c.balance < 0) {
+                balText.innerText = 'দেবো ৳ ' + Math.abs(c.balance).toLocaleString();
+                balText.style.color = '#28a745';
+            } else {
+                balText.innerText = 'হিসাব সমান ৳ ০.০০';
+                balText.style.color = '#555';
+            }
+        }
+
+        function renderList() {
+            let container = document.getElementById('customerListContainer');
+            let totalReceiveElem = document.getElementById('totalReceive');
+            let totalGiveElem = document.getElementById('totalGive');
+            let listCountElem = document.getElementById('listCount');
+
+            if(!customers || customers.length === 0) {
+                container.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">কোনো কাস্টমার বা সাপ্লায়ার নেই</div>';
+                totalReceiveElem.innerText = '৳ ০';
+                totalGiveElem.innerText = '৳ ০';
+                listCountElem.innerText = 'কাস্টমার ০ / সাপ্লায়ার ০';
+                return;
+            }
+
+            let html = '';
+            let totalReceive = 0;
+            let totalGive = 0;
+            let custCount = 0;
+            let suppCount = 0;
+
+            customers.forEach((c, index) => {
+                let shortName = c.name ? c.name.substring(0, 2) : 'না';
+                if(c.role === 'supplier') suppCount++;
+                else custCount++;
+
+                let amountText = '০.০০';
+                let amountColor = '#666';
+
+                if(c.balance > 0) {
+                    totalReceive += c.balance;
+                    amountText = c.balance.toLocaleString();
+                    amountColor = '#d9534f';
+                } else if(c.balance < 0) {
+                    totalGive += Math.abs(c.balance);
+                    amountText = Math.abs(c.balance).toLocaleString();
+                    amountColor = '#28a745';
+                }
+
+                let subText = c.role === 'supplier' ? 'সাপ্লায়ার' : 'কাস্টমার';
+                if(c.phone) subText += ` | ${c.phone}`;
+
+                html += `
+                    <div class="customer-row" onclick="openDetailPage(${index})">
+                        <div class="customer-left">
+                            <div class="avatar ${c.role === 'supplier' ? 'red-bg' : ''}">${shortName}</div>
+                            <div>
+                                <div class="cust-name">${c.name}</div>
+                                <div class="cust-time">${subText}</div>
+                            </div>
+                        </div>
+                        <div class="customer-right">
+                            <div class="cust-amount" style="color: ${amountColor};">৳ ${amountText} ></div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            totalReceiveElem.innerText = '৳ ' + totalReceive.toLocaleString();
+            totalGiveElem.innerText = '৳ ' + totalGive.toLocaleString();
+            listCountElem.innerText = `কাস্টমার ${custCount} / সাপ্লায়ার ${suppCount}`;
+        }
+
+        function searchCustomer() {
+            let query = document.getElementById('searchInput').value.toLowerCase();
+            let rows = document.querySelectorAll('.customer-row');
+            rows.forEach(row => {
+                let name = row.querySelector('.cust-name').innerText.toLowerCase();
+                row.style.display = name.includes(query) ? 'flex' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>
